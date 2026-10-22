@@ -1,0 +1,27 @@
+name: Daily Market Data Pipeline
+on:
+  schedule:
+    - cron: '0 18 * * 1-5' # 6:00 PM UTC Monday-Friday
+  workflow_dispatch: # Allows you to manually click a button to test it
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install Dependencies
+        run: pip install requests pandas python-dotenv boto3
+        
+      - name: Extract Raw Data
+        env:
+          ALPHAVANTAGE_API_KEY: ${{ secrets.API_KEY }}
+        run: python extract/fetch_market_data.py
+        
+      - name: Transform Data
+        run: python transform/clean_market_data.py
